@@ -1,0 +1,63 @@
+{
+ "titulo": "O lobo que arruinou minha base",
+ "video": "captura.mp4",
+ "formato": "16:9",
+ "arquivo_saida": "video_final.mp4",
+ "narracao": {
+  "voz": "pt-BR-AntonioNeural",
+  "taxa": "+8%",
+  "tom": "+0Hz"
+ },
+ "audio": {
+  "volume_jogo": 0.9,
+  "volume_jogo_sob_narracao": 0.22,
+  "volume_narracao": 1.25,
+  "trilha": null,
+  "volume_trilha": 0.12,
+  "loudness_lufs": -14
+ },
+ "legendas": true,
+ "enquadramento": "ajustar",
+ "atraso_narracao": 0.35,
+ "respiro": 0.45,
+ "cenas": [
+  {
+   "inicio": "00:36",
+   "fim": "00:39",
+   "texto_tela": "DIA 1: TUDO DEU ERRADO",
+   "narracao": "Eu tinha um plano simples: sobreviver à primeira noite. Spoiler: não deu certo."
+  },
+  {
+   "inicio": "00:02",
+   "fim": "00:08",
+   "velocidade": 1.5,
+   "narracao": "Tudo começou tranquilo, explorando a floresta atrás de qualquer coisa útil."
+  },
+  {
+   "inicio": "00:20",
+   "fim": "00:26",
+   "narracao": "Doze peças de madeira depois, eu já me sentia o rei da sobrevivência."
+  },
+  {
+   "inicio": "00:35",
+   "fim": "00:41",
+   "texto_tela": "LOBO!",
+   "narracao": "Até que ele apareceu."
+  },
+  {
+   "inicio": "00:41",
+   "fim": "00:47.5",
+   "narracao": "Trinta e cinco de vida, nenhuma arma decente, e uma péssima ideia: lutar."
+  },
+  {
+   "inicio": "00:47.2",
+   "fim": "00:50",
+   "narracao": ""
+  },
+  {
+   "inicio": "00:53",
+   "fim": "00:60",
+   "narracao": "Mas sobrevivência é isso. Você cai, renasce, e reconstrói. Se inscreve no canal pra ver se eu passo do dia dois."
+  }
+ ]
+}
