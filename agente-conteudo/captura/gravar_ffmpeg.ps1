@@ -1,38 +1,36 @@
 <#
-  Alternativa sem OBS: grava a tela do PC de gameplay com ffmpeg (ddagrab = Desktop
-  Duplication, leve e acelerado por GPU; requer ffmpeg 6+ no PATH).
+  Alternativa sem OBS: grava SÓ a janela do jogo com ffmpeg (gdigrab por título).
+  Nunca grava a área de trabalho inteira (regra do PC de environment).
 
-  Áudio: o ffmpeg não captura o som do sistema sozinho no Windows. Use um dispositivo
-  dshow — "Mixagem estéreo"/"Stereo Mix" (ativar em Som > Gravação) ou o
-  "virtual-audio-capturer" do pacote screen-capture-recorder. Liste com:
-     ffmpeg -list_devices true -f dshow -i dummy
+  Limitação: o ffmpeg não grava o áudio de um único aplicativo no Windows. Sem som de jogo
+  aqui; para vídeo com som use o OBS (gravar_obs.py, "Captura de áudio de aplicativo").
+  Se a janela sair preta (jogos DX12 em modo flip), use o OBS com Windows Graphics Capture.
 
   Uso:
-    .\gravar_ffmpeg.ps1 -Sessao C:\capturas\2026-11-21_ep01 -Duracao 600 -Audio "Stereo Mix (Realtek(R) Audio)"
+    .\gravar_ffmpeg.ps1 -Sessao C:\capturas\2026-11-21_ep01 -Duracao 600 -Janela "AbyssalSurvivors"
 #>
 param(
   [Parameter(Mandatory)] [string]$Sessao,
+  [Parameter(Mandatory)] [string]$Janela,   # parte do título da janela do jogo
   [int]$Duracao = 600,
-  [string]$Audio = "",
-  [int]$Fps = 30,
-  [int]$Monitor = 0
+  [int]$Fps = 30
 )
 $ErrorActionPreference = "Stop"
 New-Item -ItemType Directory -Force -Path $Sessao | Out-Null
 $saida = Join-Path $Sessao "captura.mp4"
 
-$ffArgs = @("-hide_banner", "-y", "-filter_complex", "ddagrab=output_idx=${Monitor}:framerate=${Fps},hwdownload,format=bgra[v]")
-if ($Audio) { $ffArgs += @("-f", "dshow", "-i", "audio=$Audio", "-map", "0:a") }
-$ffArgs += @("-map", "[v]")
+$proc = Get-Process | Where-Object { $_.MainWindowTitle -like "*$Janela*" } | Select-Object -First 1
+if (-not $proc) { throw "Janela com '$Janela' no título não encontrada" }
+$titulo = $proc.MainWindowTitle
 
-# NVENC se houver GPU NVIDIA; senão x264
 $enc = @("-c:v", "libx264", "-preset", "veryfast", "-crf", "20")
 if ((ffmpeg -hide_banner -encoders 2>$null) -match "h264_nvenc") { $enc = @("-c:v", "h264_nvenc", "-preset", "p5", "-cq", "21") }
-$ffArgs += $enc + @("-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-t", "$Duracao", $saida)
+$ffArgs = @("-hide_banner", "-y", "-f", "gdigrab", "-framerate", "$Fps", "-i", "title=$titulo") + $enc +
+          @("-pix_fmt", "yuv420p", "-t", "$Duracao", $saida)
 
 $inicio = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() / 1000.0
 @{ inicio_epoch = $inicio } | ConvertTo-Json | Set-Content (Join-Path $Sessao "sessao.json")
 & ffmpeg @ffArgs
 $fim = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() / 1000.0
-@{ inicio_epoch = $inicio; fim_epoch = $fim; arquivo = "captura.mp4" } | ConvertTo-Json | Set-Content (Join-Path $Sessao "sessao.json")
+@{ inicio_epoch = $inicio; fim_epoch = $fim; arquivo = "captura.mp4"; janela = $titulo } | ConvertTo-Json | Set-Content (Join-Path $Sessao "sessao.json")
 Write-Host "ok: $saida"

@@ -9,7 +9,10 @@ Pré-requisitos (uma vez):
   pip install obsws-python
   OBS > Ferramentas > Configurações do WebSocket: ativar, porta 4455, definir senha.
   OBS > Configurações > Saída > Gravação: formato mp4 (ou mkv + remux), encoder NVENC/x264.
-  Cena do OBS com "Captura de jogo" + áudio da área de trabalho.
+  Cena "Gameplay" SÓ com a janela do jogo e o áudio do jogo (nunca a área de trabalho):
+    - Captura de janela, método Windows Graphics Capture (ou Captura de jogo, modo janela)
+    - Captura de áudio de aplicativo (Windows 11) do processo do jogo
+    - áudio da área de trabalho e microfone desativados
 
 Uso:
   python gravar_obs.py --duracao 600 --sessao C:\\capturas\\2026-11-21_ep01

@@ -19,7 +19,7 @@ corta → narra (pt-BR) → legenda**. O Claude conduz o processo pela skill
 | Arquivo | Onde roda | O que faz |
 |---|---|---|
 | `captura/gravar_obs.py` | PC de gameplay | Inicia/para gravação no OBS via websocket; grava `sessao.json` com o horário de início (alinha os eventos do robô) |
-| `captura/gravar_ffmpeg.ps1` | PC de gameplay | Alternativa sem OBS (ddagrab + NVENC) |
+| `captura/gravar_ffmpeg.ps1` | PC de gameplay | Alternativa sem OBS: só a janela do jogo (gdigrab), sem áudio |
 | `captura/enviar.ps1` | PC de gameplay | Recomprime em 1080p, fatia em partes < 95 MB e faz push numa branch `capturas/<jogo>/<id>` |
 | `scripts/receber.sh` | nuvem | Baixa a branch e junta as partes em `captura.mp4` |
 | `scripts/analisar.py` | nuvem | Metadados, cortes de cena, picos de áudio, eventos, folhas de contato e quadros de destaque → `analise.md` |
