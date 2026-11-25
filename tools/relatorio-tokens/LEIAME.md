@@ -20,9 +20,13 @@ Os números vêm dos registros locais do Claude Code (`%USERPROFILE%\.claude\pro
 1. O PC precisa ter Node.js: `winget install OpenJS.NodeJS.LTS`
 2. Extraia o zip e dê dois cliques em `instalar.bat`.
 
-O instalador copia os arquivos para `%LOCALAPPDATA%\relatorio-tokens`, agenda a tarefa **Relatorio de uso do Claude Code** para todo dia às 23:30, gera os relatórios dos últimos 30 dias e abre a pasta. Se o PC estiver desligado no horário, a tarefa roda assim que ele ligar.
+O instalador copia os arquivos para `%LOCALAPPDATA%\relatorio-tokens`, agenda a tarefa **Relatorio de uso do Claude Code** para todo dia às 23:30, cria o atalho **Relatorio Claude de hoje** na área de trabalho, gera os relatórios dos últimos 30 dias e abre a pasta. Se o PC estiver desligado no horário, a tarefa roda assim que ele ligar.
 
 Cada execução recalcula ontem e hoje e substitui os arquivos desses dias. O resumo do Claude só é refeito se os dados do dia mudaram (alguns milhares de tokens do Haiku por dia).
+
+## Relatório de hoje, na hora
+
+Dê dois cliques em `relatorio-agora.bat` (ou no atalho **Relatorio Claude de hoje** que o instalador cria na área de trabalho). Ele gera o relatório da 0h até o momento e abre no Bloco de Notas. Para ficar mais rápido e sem gastar tokens, troque `RESUMO_IA=1` por `0` no topo do arquivo.
 
 ## Testar sem instalar
 

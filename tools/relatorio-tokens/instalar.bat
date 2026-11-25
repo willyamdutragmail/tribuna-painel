@@ -14,6 +14,7 @@ where node >nul 2>&1 || (echo Instale o Node.js primeiro: winget install OpenJS.
 if not exist "%DEST%" mkdir "%DEST%"
 copy /y "%~dp0relatorio-tokens.js" "%DEST%\" >nul || (echo ERRO ao copiar arquivos. & pause & exit /b 1)
 copy /y "%~dp0relatorio-tokens.bat" "%DEST%\" >nul || (echo ERRO ao copiar arquivos. & pause & exit /b 1)
+copy /y "%~dp0relatorio-agora.bat" "%DEST%\" >nul || (echo ERRO ao copiar arquivos. & pause & exit /b 1)
 echo Arquivos copiados para %DEST%
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
@@ -23,6 +24,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "Register-ScheduledTask -TaskName '%TAREFA%' -Action $a -Trigger $t -Settings $s -Description 'Gera o relatorio diario de tokens do Claude Code em Documentos\Relatorios Claude.' -Force | Out-Null"
 if errorlevel 1 (echo ERRO ao agendar a tarefa. & pause & exit /b 1)
 echo Tarefa "%TAREFA%" agendada para todo dia as %HORA%.
+
+rem Atalho na area de trabalho para gerar o relatorio de hoje na hora.
+powershell -NoProfile -Command ^
+  "$w = New-Object -ComObject WScript.Shell; $l = $w.CreateShortcut([Environment]::GetFolderPath('Desktop') + '\Relatorio Claude de hoje.lnk');" ^
+  "$l.TargetPath = '%DEST%\relatorio-agora.bat'; $l.WorkingDirectory = '%DEST%'; $l.Save()"
+echo Atalho "Relatorio Claude de hoje" criado na area de trabalho.
 
 echo.
 echo Gerando os relatorios dos ultimos 30 dias...
