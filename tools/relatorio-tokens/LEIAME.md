@@ -28,6 +28,20 @@ A tarefa gera o relatório de **ontem**, com o dia já completo. Se o PC ficou d
 
 Dê dois cliques em `relatorio-agora.bat` (ou no atalho **Relatorio Claude de hoje** que o instalador cria na área de trabalho). Ele gera o relatório da 0h até o momento e abre no Bloco de Notas. Esse relatório fica marcado como parcial, e a tarefa do dia seguinte o substitui pela versão completa. Para ficar mais rápido e sem gastar tokens, troque `RESUMO_IA=1` por `0` no topo do arquivo.
 
+## Relatório de ontem, na hora
+
+Dê dois cliques em `relatorio-ontem.bat`. Ele gera o relatório de ontem, se ainda não existir, e abre no Bloco de Notas.
+
+## Arquivos
+
+| Arquivo | O que faz |
+|---|---|
+| `relatorio-ontem.bat` | Gera e abre o relatório de ontem |
+| `relatorio-agora.bat` | Gera e abre o relatório de hoje até o momento |
+| `relatorio-tokens.bat` | O que a tarefa diária roda: gera ontem e os dias da última semana sem relatório, sem abrir nada |
+| `instalar.bat` | Agenda a tarefa diária, cria o atalho e gera os últimos 30 dias |
+| `relatorio-tokens.js` | O script que lê os registros e escreve os relatórios (usado pelos .bat) |
+
 ## Testar sem instalar
 
 No PowerShell, dentro da pasta extraída:

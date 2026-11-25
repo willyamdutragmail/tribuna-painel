@@ -15,6 +15,7 @@ if not exist "%DEST%" mkdir "%DEST%"
 copy /y "%~dp0relatorio-tokens.js" "%DEST%\" >nul || (echo ERRO ao copiar arquivos. & pause & exit /b 1)
 copy /y "%~dp0relatorio-tokens.bat" "%DEST%\" >nul || (echo ERRO ao copiar arquivos. & pause & exit /b 1)
 copy /y "%~dp0relatorio-agora.bat" "%DEST%\" >nul || (echo ERRO ao copiar arquivos. & pause & exit /b 1)
+copy /y "%~dp0relatorio-ontem.bat" "%DEST%\" >nul || (echo ERRO ao copiar arquivos. & pause & exit /b 1)
 echo Arquivos copiados para %DEST%
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
