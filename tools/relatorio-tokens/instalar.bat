@@ -9,7 +9,6 @@ set "HORA=23:30"
 set "DEST=%LOCALAPPDATA%\relatorio-tokens"
 set "TAREFA=Relatorio de uso do Claude Code"
 
-where git >nul 2>&1 || (echo Instale o Git primeiro: winget install Git.Git & pause & exit /b 1)
 where node >nul 2>&1 || (echo Instale o Node.js primeiro: winget install OpenJS.NodeJS.LTS & pause & exit /b 1)
 
 if not exist "%DEST%" mkdir "%DEST%"
@@ -21,13 +20,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$a = New-ScheduledTaskAction -Execute '%DEST%\relatorio-tokens.bat';" ^
   "$t = New-ScheduledTaskTrigger -Daily -At '%HORA%';" ^
   "$s = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 30);" ^
-  "Register-ScheduledTask -TaskName '%TAREFA%' -Action $a -Trigger $t -Settings $s -Description 'Envia ao GitHub o relatorio diario de tokens do Claude Code.' -Force | Out-Null"
+  "Register-ScheduledTask -TaskName '%TAREFA%' -Action $a -Trigger $t -Settings $s -Description 'Gera o relatorio diario de tokens do Claude Code em Documentos\Relatorios Claude.' -Force | Out-Null"
 if errorlevel 1 (echo ERRO ao agendar a tarefa. & pause & exit /b 1)
 echo Tarefa "%TAREFA%" agendada para todo dia as %HORA%.
 
 echo.
-echo Gerando os relatorios dos ultimos 30 dias (na primeira vez o Git pode pedir login no GitHub)...
+echo Gerando os relatorios dos ultimos 30 dias...
 call "%DEST%\relatorio-tokens.bat" 30
+for /f "delims=" %%i in ('powershell -NoProfile -Command "[Environment]::GetFolderPath('MyDocuments')"') do set "DOCS=%%i"
+if exist "%DOCS%\Relatorios Claude" start "" "%DOCS%\Relatorios Claude"
 echo.
 echo Pronto. Log da ultima execucao: %DEST%\ultimo-log.txt
 pause

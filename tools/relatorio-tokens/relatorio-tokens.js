@@ -2,7 +2,7 @@
 // Relatório diário de uso do Claude Code neste computador.
 //
 // Lê os registros locais das sessões (~/.claude/projects/**/*.jsonl) e gera,
-// para cada dia, um relatório em Markdown e outro em JSON com:
+// para cada dia, um relatório em texto (.txt) com:
 //   - tokens gastos (entrada, saída, cache criado, cache lido)
 //   - modelo e nível de esforço usados
 //   - por sessão: projeto, branch, pedidos feitos, arquivos alterados e commits do dia
@@ -214,7 +214,7 @@ function resumoIA(dados) {
     'Escreva em português do Brasil um resumo curto (no máximo 8 tópicos) do que foi feito',
     'neste dia de trabalho com o Claude Code, a partir dos dados abaixo. Agrupe por projeto,',
     'diga o que foi implementado ou corrigido em linguagem simples e não invente nada que não',
-    'esteja nos dados. Responda só com os tópicos em Markdown, sem título.',
+    'esteja nos dados. Responda só com os tópicos em texto simples, um por linha começando com "- ", sem Markdown e sem título.',
     '',
     JSON.stringify(dados.sessoes.map((s) => ({
       projeto: s.projeto, titulo: s.titulo, branch: s.branch,
@@ -274,8 +274,11 @@ for (const dia of [...diasAlvo].sort()) {
 
   const pastaMes = path.join(SAIDA, dia.slice(0, 7));
   fs.mkdirSync(pastaMes, { recursive: true });
-  const arqJson = path.join(pastaMes, dia + '.json');
-  const arqMd = path.join(pastaMes, dia + '.md');
+  // Dados brutos ficam numa subpasta, só para reaproveitar o resumo na próxima execução.
+  const pastaDados = path.join(pastaMes, '.dados');
+  fs.mkdirSync(pastaDados, { recursive: true });
+  const arqJson = path.join(pastaDados, dia + '.json');
+  const arqTxt = path.join(pastaMes, dia + '.txt');
 
   // Reaproveita o resumo anterior se os dados do dia não mudaram (evita gastar tokens à toa).
   let resumo = null;
@@ -289,61 +292,67 @@ for (const dia of [...diasAlvo].sort()) {
   dados.resumo = resumo;
 
   fs.writeFileSync(arqJson, JSON.stringify(dados, null, 2) + '\n');
-  fs.writeFileSync(arqMd, markdown(dados));
-  gerados.push(arqMd);
+  // BOM no início para o Bloco de Notas abrir os acentos corretamente.
+  fs.writeFileSync(arqTxt, '\ufeff' + texto(dados).replace(/\n/g, '\r\n'));
+  gerados.push(arqTxt);
 }
 
-function linhaTokens(t) {
-  return `| ${fmt(t.entrada)} | ${fmt(t.saida)} | ${fmt(t.cacheCriado)} | ${fmt(t.cacheLido)} |`;
-}
 function listaContagem(obj) {
-  return Object.entries(obj).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} (${v})`).join(', ') || '—';
+  return Object.entries(obj).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} (${v})`).join(', ') || '-';
 }
+function colunas(nome, t) {
+  const c = (v, n) => fmt(v).padStart(n);
+  return `${nome.padEnd(26)}${c(t.entrada, 12)}${c(t.saida, 12)}${c(t.cacheCriado, 15)}${c(t.cacheLido, 16)}`;
+}
+function titulo(s, ch) { return s + '\n' + ch.repeat(Math.min(s.length, 78)); }
 
-function markdown(d) {
+function texto(d) {
   const L = [];
-  L.push(`# Uso do Claude Code: ${d.computador}, ${d.dia}`, '');
-  L.push(`${d.sessoes.length} sessão(ões), ${fmt(d.total)} tokens no total.`, '');
-  L.push('## O que foi feito', '');
-  if (d.resumo) L.push(d.resumo, '');
-  else {
-    for (const s of d.sessoes) {
-      const c = s.commits.length ? `; commits: ${s.commits.map((x) => x.mensagem).join('; ')}` : '';
-      L.push(`- **${s.projeto}**: ${s.titulo} (${s.arquivos.length} arquivo(s) alterado(s)${c})`);
-    }
-    L.push('');
+  L.push(titulo(`USO DO CLAUDE CODE - ${d.computador} - ${d.dia}`, '='), '');
+  L.push(`${d.sessoes.length} sessao(oes), ${fmt(d.total)} tokens no total.`, '');
+
+  L.push(titulo('O QUE FOI FEITO', '-'));
+  if (d.resumo) L.push(d.resumo.replace(/\*\*/g, ''));
+  else for (const s of d.sessoes) {
+    const c = s.commits.length ? `; commits: ${s.commits.map((x) => x.mensagem).join('; ')}` : '';
+    L.push(`- ${s.projeto}: ${s.titulo} (${s.arquivos.length} arquivo(s) alterado(s)${c})`);
   }
-  L.push('## Tokens do dia', '');
-  L.push('| | Entrada | Saída | Cache criado | Cache lido |', '|---|---:|---:|---:|---:|');
-  L.push('| **Total** ' + linhaTokens(d.totais));
-  for (const [m, t] of Object.entries(d.porModelo)) L.push(`| ${m} ` + linhaTokens(t));
   L.push('');
-  L.push('**Por esforço:** ' + Object.entries(d.porEsforco)
-    .map(([e, t]) => `${e}: ${fmt(t.respostas)} respostas, ${fmt(t.saida)} tokens de saída`).join(' · '), '');
-  L.push('## Sessões', '');
+
+  L.push(titulo('TOKENS DO DIA', '-'));
+  L.push(`${''.padEnd(26)}${'Entrada'.padStart(12)}${'Saida'.padStart(12)}${'Cache criado'.padStart(15)}${'Cache lido'.padStart(16)}`);
+  L.push(colunas('TOTAL', d.totais));
+  for (const [m, t] of Object.entries(d.porModelo)) L.push(colunas(m, t));
+  L.push('');
+  L.push('Por esforco:');
+  for (const [e, t] of Object.entries(d.porEsforco)) L.push(`  ${e}: ${fmt(t.respostas)} respostas, ${fmt(t.saida)} tokens de saida`);
+  L.push('');
+
+  L.push(titulo('SESSOES', '-'), '');
   for (const s of d.sessoes) {
-    L.push(`### ${s.titulo}`, '');
-    L.push(`- **Projeto:** ${s.projeto}${s.branch ? ` (branch \`${s.branch}\`)` : ''}`);
-    L.push(`- **Horário:** ${s.inicio}–${s.fim}, ${s.respostas} respostas`);
-    L.push(`- **Modelo:** ${listaContagem(s.modelos)}`);
-    L.push(`- **Esforço:** ${listaContagem(s.esforcos)}`);
-    L.push(`- **Tokens:** ${fmt(s.total)} (entrada ${fmt(s.tokens.entrada)}, saída ${fmt(s.tokens.saida)}, cache criado ${fmt(s.tokens.cacheCriado)}, cache lido ${fmt(s.tokens.cacheLido)})`);
+    L.push(`> ${s.titulo}`);
+    L.push(`  Projeto:  ${s.projeto}${s.branch ? ` (branch ${s.branch})` : ''}`);
+    L.push(`  Horario:  ${s.inicio} - ${s.fim}, ${s.respostas} respostas`);
+    L.push(`  Modelo:   ${listaContagem(s.modelos)}`);
+    L.push(`  Esforco:  ${listaContagem(s.esforcos)}`);
+    L.push(`  Tokens:   ${fmt(s.total)} (entrada ${fmt(s.tokens.entrada)}, saida ${fmt(s.tokens.saida)}, cache criado ${fmt(s.tokens.cacheCriado)}, cache lido ${fmt(s.tokens.cacheLido)})`);
     if (s.pedidos.length) {
-      L.push('- **Pedidos:**');
-      for (const p of s.pedidos.slice(0, 5)) L.push(`  - ${corta(p, 160)}`);
-      if (s.pedidos.length > 5) L.push(`  - … e mais ${s.pedidos.length - 5}`);
+      L.push('  Pedidos:');
+      for (const p of s.pedidos.slice(0, 5)) L.push(`    - ${corta(p, 160)}`);
+      if (s.pedidos.length > 5) L.push(`    - ... e mais ${s.pedidos.length - 5}`);
     }
     if (s.arquivos.length) {
-      L.push(`- **Arquivos alterados (${s.arquivos.length}):** ` +
-        s.arquivos.slice(0, 15).map((a) => '`' + a + '`').join(', ') + (s.arquivos.length > 15 ? ', …' : ''));
+      L.push(`  Arquivos alterados (${s.arquivos.length}):`);
+      for (const a of s.arquivos.slice(0, 15)) L.push(`    - ${a}`);
+      if (s.arquivos.length > 15) L.push('    - ...');
     }
     if (s.commits.length) {
-      L.push('- **Commits do dia no repositório:**');
-      for (const c of s.commits) L.push(`  - \`${c.hash}\` ${c.hora} ${corta(c.mensagem, 120)}`);
+      L.push('  Commits do dia no repositorio:');
+      for (const c of s.commits) L.push(`    - ${c.hash} ${c.hora} ${corta(c.mensagem, 120)}`);
     }
     L.push('');
   }
-  L.push('---', `Gerado em ${new Date(d.geradoEm).toLocaleString('pt-BR')} a partir dos registros locais do Claude Code.`, '');
+  L.push(`Gerado em ${new Date(d.geradoEm).toLocaleString('pt-BR')} a partir dos registros locais do Claude Code.`, '');
   return L.join('\n');
 }
 
