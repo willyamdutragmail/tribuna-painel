@@ -1,6 +1,6 @@
 # Relatório diário de uso do Claude Code
 
-Todo dia, o PC gera um relatório em texto do que o Claude Code fez nele. Fica tudo no próprio computador, sem enviar nada para lugar nenhum.
+Todo dia, o PC gera um relatório em texto do que o Claude Code fez nele no dia anterior. Fica tudo no próprio computador, sem enviar nada para lugar nenhum.
 
 ## Onde ficam os relatórios
 
@@ -20,13 +20,13 @@ Os números vêm dos registros locais do Claude Code (`%USERPROFILE%\.claude\pro
 1. O PC precisa ter Node.js: `winget install OpenJS.NodeJS.LTS`
 2. Extraia o zip e dê dois cliques em `instalar.bat`.
 
-O instalador copia os arquivos para `%LOCALAPPDATA%\relatorio-tokens`, agenda a tarefa **Relatorio de uso do Claude Code** para todo dia às 23:30, cria o atalho **Relatorio Claude de hoje** na área de trabalho, gera os relatórios dos últimos 30 dias e abre a pasta. Se o PC estiver desligado no horário, a tarefa roda assim que ele ligar.
+O instalador copia os arquivos para `%LOCALAPPDATA%\relatorio-tokens`, agenda a tarefa **Relatorio de uso do Claude Code** para todo dia às 08:00, cria o atalho **Relatorio Claude de hoje** na área de trabalho, gera os relatórios dos últimos 30 dias e abre a pasta. Se o PC estiver desligado no horário, a tarefa roda assim que ele ligar.
 
-Cada execução recalcula ontem e hoje e substitui os arquivos desses dias. O resumo do Claude só é refeito se os dados do dia mudaram (alguns milhares de tokens do Haiku por dia).
+A tarefa gera o relatório de **ontem**, com o dia já completo. Se o PC ficou desligado por alguns dias, ela também gera os dias da última semana que ficaram sem relatório. Dias que já têm relatório completo nunca são refeitos. O resumo do Claude gasta alguns milhares de tokens do Haiku por dia.
 
 ## Relatório de hoje, na hora
 
-Dê dois cliques em `relatorio-agora.bat` (ou no atalho **Relatorio Claude de hoje** que o instalador cria na área de trabalho). Ele gera o relatório da 0h até o momento e abre no Bloco de Notas. Para ficar mais rápido e sem gastar tokens, troque `RESUMO_IA=1` por `0` no topo do arquivo.
+Dê dois cliques em `relatorio-agora.bat` (ou no atalho **Relatorio Claude de hoje** que o instalador cria na área de trabalho). Ele gera o relatório da 0h até o momento e abre no Bloco de Notas. Esse relatório fica marcado como parcial, e a tarefa do dia seguinte o substitui pela versão completa. Para ficar mais rápido e sem gastar tokens, troque `RESUMO_IA=1` por `0` no topo do arquivo.
 
 ## Testar sem instalar
 
@@ -42,7 +42,7 @@ No topo do `relatorio-tokens.bat`:
 
 | Variável | Para quê |
 |---|---|
-| `DIAS` | Quantos dias cada execução recalcula (padrão 2) |
+| `DIAS` | Até quantos dias para trás procurar dias sem relatório (padrão 7) |
 | `RESUMO_IA` | `1` gera o resumo com o Claude; `0` usa só a lista de sessões, sem gastar tokens |
 | `PASTA` | Outra pasta para os relatórios (vazio = Documentos\Relatorios Claude) |
 

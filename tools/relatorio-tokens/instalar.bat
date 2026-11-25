@@ -5,7 +5,7 @@ setlocal EnableExtensions
 chcp 65001 >nul
 
 rem Horario diario da execucao. Se o PC estiver desligado, roda assim que ligar.
-set "HORA=23:30"
+set "HORA=08:00"
 set "DEST=%LOCALAPPDATA%\relatorio-tokens"
 set "TAREFA=Relatorio de uso do Claude Code"
 
@@ -21,7 +21,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$a = New-ScheduledTaskAction -Execute '%DEST%\relatorio-tokens.bat';" ^
   "$t = New-ScheduledTaskTrigger -Daily -At '%HORA%';" ^
   "$s = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 30);" ^
-  "Register-ScheduledTask -TaskName '%TAREFA%' -Action $a -Trigger $t -Settings $s -Description 'Gera o relatorio diario de tokens do Claude Code em Documentos\Relatorios Claude.' -Force | Out-Null"
+  "Register-ScheduledTask -TaskName '%TAREFA%' -Action $a -Trigger $t -Settings $s -Description 'Gera o relatorio do dia anterior do Claude Code em Documentos\Relatorios Claude.' -Force | Out-Null"
 if errorlevel 1 (echo ERRO ao agendar a tarefa. & pause & exit /b 1)
 echo Tarefa "%TAREFA%" agendada para todo dia as %HORA%.
 

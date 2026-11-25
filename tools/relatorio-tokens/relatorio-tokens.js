@@ -29,6 +29,10 @@ const RESUMO_IA = arg('resumo-ia', '1') === '1';
 const MODELO_RESUMO = arg('modelo-resumo', 'haiku');
 const IGNORAR_PASTA = (arg('ignorar-pasta', '') || '').toLowerCase();
 const PC = arg('pc', os.hostname());
+// --excluir-hoje 1: só dias que já terminaram (para o relatório do dia anterior).
+const EXCLUIR_HOJE = arg('excluir-hoje', '0') === '1';
+// --so-faltantes 1: não refaz dias que já têm relatório completo.
+const SO_FALTANTES = arg('so-faltantes', '0') === '1';
 const CLAUDE_DIR = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const PROJETOS = path.join(CLAUDE_DIR, 'projects');
 
@@ -47,13 +51,14 @@ const corta = (s, n) => {
   return s.length > n ? s.slice(0, n - 1) + '…' : s;
 };
 
+const HOJE = dataLocal(new Date());
 const diasAlvo = new Set();
-for (let i = 0; i < DIAS; i++) {
+for (let i = EXCLUIR_HOJE ? 1 : 0; i < DIAS + (EXCLUIR_HOJE ? 1 : 0); i++) {
   const d = new Date();
   d.setDate(d.getDate() - i);
   diasAlvo.add(dataLocal(d));
 }
-const limiteMtime = Date.now() - (DIAS + 1) * 86400000;
+const limiteMtime = Date.now() - (DIAS + 2) * 86400000;
 
 function listarJsonl(dir, saida = []) {
   let itens;
@@ -236,7 +241,16 @@ function nomeProjeto(cwd, raiz) {
 }
 
 const gerados = [];
+function relatorioCompleto(dia) {
+  try {
+    const j = JSON.parse(fs.readFileSync(path.join(SAIDA, dia.slice(0, 7), '.dados', dia + '.json'), 'utf8'));
+    return j.completo === true;
+  } catch { return false; }
+}
+
+const pulados = [];
 for (const dia of [...diasAlvo].sort()) {
+  if (SO_FALTANTES && relatorioCompleto(dia)) { pulados.push(dia); continue; }
   const lista = [...sessoes.values()].filter((s) => s.dia === dia && (s.respostas > 0 || s.pedidos.length));
   if (!lista.length) continue;
 
@@ -267,6 +281,7 @@ for (const dia of [...diasAlvo].sort()) {
   for (const s of sessoesDia) for (const k in totais) totais[k] += s.tokens[k];
   const dados = {
     computador: PC, dia, geradoEm: new Date().toISOString(),
+    completo: dia < HOJE, // falso quando o dia ainda está em andamento
     totais, total: totais.entrada + totais.saida + totais.cacheCriado + totais.cacheLido,
     porModelo: porChave(dia, 'modelo'), porEsforco: porChave(dia, 'esforco'),
     sessoes: sessoesDia,
@@ -352,9 +367,11 @@ function texto(d) {
     }
     L.push('');
   }
-  L.push(`Gerado em ${new Date(d.geradoEm).toLocaleString('pt-BR')} a partir dos registros locais do Claude Code.`, '');
+  L.push(`Gerado em ${new Date(d.geradoEm).toLocaleString('pt-BR')} a partir dos registros locais do Claude Code.` +
+    (d.completo ? '' : ' Parcial: o dia ainda estava em andamento.'), '');
   return L.join('\n');
 }
 
 if (gerados.length) console.log('Relatórios gerados:\n' + gerados.join('\n'));
-else console.log(`Nenhuma sessão encontrada em ${PROJETOS} nos últimos ${DIAS} dia(s).`);
+if (pulados.length) console.log(`Já tinham relatório completo: ${pulados.join(', ')}`);
+if (!gerados.length && !pulados.length) console.log(`Nenhuma sessão encontrada em ${PROJETOS} no período.`);
