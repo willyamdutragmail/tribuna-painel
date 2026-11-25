@@ -6,7 +6,7 @@ chcp 65001 >nul
 
 rem ============ CONFIGURACAO (edite antes de instalar) ============
 rem Repositorio que recebe os relatorios. Use um repositorio PRIVADO.
-set "REPO_URL=https://github.com/willyamdutragmail/claude-uso-tokens.git"
+set "REPO_URL=https://github.com/Shedofideas/Daily-Report.git"
 rem Branch onde os relatorios sao gravados.
 set "BRANCH=main"
 rem Quantos dias para tras cada execucao recalcula.

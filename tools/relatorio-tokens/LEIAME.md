@@ -15,8 +15,8 @@ Os números vêm dos registros locais do Claude Code (`%USERPROFILE%\.claude\pro
 
 ## Antes de instalar
 
-1. **Crie um repositório privado vazio** no GitHub para receber os relatórios, por exemplo `claude-uso-tokens`. Os relatórios trazem nomes de pastas, pedidos feitos ao Claude e o volume de uso, então não use um repositório público.
-2. Se escolher outro nome, troque a linha `REPO_URL` no topo do `relatorio-tokens.bat`.
+1. Os relatórios vão para **https://github.com/Shedofideas/Daily-Report** (linha `REPO_URL` no topo do `relatorio-tokens.bat`). Mantenha esse repositório **privado**: os relatórios trazem nomes de pastas, pedidos feitos ao Claude e o volume de uso.
+2. O login do Git em cada PC precisa poder enviar para esse repositório. Ou a sua conta é colaboradora dele (Settings → Collaborators), ou você troca a URL para `https://Shedofideas@github.com/Shedofideas/Daily-Report.git` e faz login com a conta Shedofideas na primeira execução.
 3. O PC precisa ter Git e Node.js:
    ```
    winget install Git.Git
