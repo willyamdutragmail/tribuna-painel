@@ -5,8 +5,8 @@ setlocal EnableExtensions
 chcp 65001 >nul
 
 rem ============ CONFIGURACAO (edite antes de instalar) ============
-rem Repositorio que recebe os relatorios. Use um repositorio PRIVADO.
-set "REPO_URL=https://github.com/Shedofideas/Daily-Report.git"
+rem Repositorio que recebe os relatorios (privado). O "Shedofideas@" faz o Git usar o login dessa conta.
+set "REPO_URL=https://Shedofideas@github.com/Shedofideas/Daily-Report.git"
 rem Branch onde os relatorios sao gravados.
 set "BRANCH=main"
 rem Quantos dias para tras cada execucao recalcula.
